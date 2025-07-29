@@ -10,7 +10,7 @@ import (
 )
 
 func LoginRoute(login fiber.Router) {
-	
+
 	//Initializee Handler, Service, Repository
 	repo := repository.LoginRepoInit(database.Database)
 	service := services.LoginServicesInit(repo)
@@ -18,5 +18,7 @@ func LoginRoute(login fiber.Router) {
 
 	login.Post("/login", handler.LoginHandler)
 	login.Post("/register", handler.Registerhandler)
-	login.Post("/forgotpassword", handler.ForgotPasswordHandler)
+	login.Post("/forgot-password/request", handler.ForgotPasswordRequestHandler)
+	//login.Post("/forgot-password/verify", handler.CheckOTPHandler)
+	//login.Post("/forgot-password/reset")
 }
