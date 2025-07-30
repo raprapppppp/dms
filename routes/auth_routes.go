@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"dms-api/database"
-	"dms-api/handlers"
-	"dms-api/repository"
-	"dms-api/services"
+	"dms-api/internal/database"
+	"dms-api/internal/handlers"
+	"dms-api/internal/repository"
+	"dms-api/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 )
