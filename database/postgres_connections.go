@@ -29,7 +29,7 @@ func ConnectionDB() error {
 
 	Database = db
 	Database.AutoMigrate(&modals.Accounts{})
-	Database.AutoMigrate(&modals.PasswordReset{})
+	Database.AutoMigrate(&modals.OTP{})
 
 	log.Println("Database connected successfully!")
 	log.Println("Database migration complete.")

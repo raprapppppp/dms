@@ -18,7 +18,7 @@ type Forgot struct {
 	Email string `json:"email"`
 }
 
-type PasswordReset struct {
+type OTP struct {
 	ID         uint      `gorm:"primaryKey"`
 	AccountsID uint      `gorm:"not null;index"`
 	OTPCode    string    `gorm:"not null"`
@@ -26,4 +26,9 @@ type PasswordReset struct {
 	Used       bool      `gorm:"default:false"`
 	CreatedAt  time.Time `gorm:"default:current_timestamp"`
 	Accounts   Accounts  `gorm:"foreignKey:AccountsID;constraint:OnDelete:CASCADE"`
+}
+
+type VerifyOTP struct {
+	Identifier string
+	Otp string
 }

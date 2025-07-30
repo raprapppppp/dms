@@ -13,8 +13,9 @@ type LoginRepository interface {
 	CheckEmailIfExist(username string) bool
 	CheckUsernameIfExist(email string) bool
 	GetAccountByEmail(email string) (*modals.Accounts, error)
-	ForgotPasswordRequestRepo(pwr modals.PasswordReset)
-	GetLatestCreateTime(id int) (modals.PasswordReset, error)
+	ForgotPasswordRequestRepo(pwr modals.OTP)
+	GetLatestOTP(id int) (modals.OTP, error)
+	UpdateOTPStatus(otpID int, isUsed bool)error
 }
 
 type InjectLoginDB struct {
@@ -84,14 +85,27 @@ func (r *InjectLoginDB) GetAccountByEmail(email string) (*modals.Accounts, error
 	return &account, nil
 }
 
-// ForgotPassword Request
-func (r *InjectLoginDB) ForgotPasswordRequestRepo(pwr modals.PasswordReset) {
+// ForgotPassword Request - Save OTP details to DB
+func (r *InjectLoginDB) ForgotPasswordRequestRepo(pwr modals.OTP) {
 	r.db.Create(&pwr)
 }
 
 // Rate Limit
-func (r *InjectLoginDB) GetLatestCreateTime(id int) (modals.PasswordReset, error) {
-	var latestRequest modals.PasswordReset
-	r.db.Where("accounts_id = ?", id).Order("created_at DESC").First(&latestRequest)
+func (r *InjectLoginDB) GetLatestOTP(id int) (modals.OTP, error) {
+	var latestRequest modals.OTP
+	err := r.db.Where("accounts_id = ?", id).Order("created_at DESC").First(&latestRequest).Error
+	if err != nil {
+		return modals.OTP{}, err
+	}
 	return latestRequest, nil
+}
+
+//Update OTP Status if already used
+func (r *InjectLoginDB) UpdateOTPStatus(otpID int, isUsed bool)error {
+	var otp modals.OTP
+	err := r.db.Model(otp).Where("id = ?", otpID).Update("used",isUsed).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
