@@ -32,3 +32,7 @@ type VerifyOTP struct {
 	Identifier string
 	Otp string
 }
+
+type NewPassword struct {
+	Password string
+}

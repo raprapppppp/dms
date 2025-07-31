@@ -3,6 +3,7 @@ package repository
 import (
 	"dms-api/internal/modals"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -16,6 +17,7 @@ type LoginRepository interface {
 	ForgotPasswordRequestRepo(pwr modals.OTP)
 	GetLatestOTP(id int) (modals.OTP, error)
 	UpdateOTPStatus(otpID int, isUsed bool) error
+	UpdatePasswordRepo(id int, newPassword string) error
 }
 
 type InjectLoginDB struct {
@@ -73,14 +75,12 @@ func (r *InjectLoginDB) CheckEmailIfExist(email string) bool {
 func (r *InjectLoginDB) GetAccountByEmail(email string) (*modals.Accounts, error) {
 	var account modals.Accounts
 	// Use SELECT to only fetch specific columns (optional)
-	err := r.db.
-		Select("id").
-		Where("email = ?", email).
-		First(&account).Error
-
-	if err != nil {
-		// Record not found
-		return nil, err
+	result := r.db.Select("id").Where("email = ?", email).First(&account)
+	if result.Error != nil {
+		return &modals.Accounts{}, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return &modals.Accounts{}, fmt.Errorf("no record found with id %s", email)
 	}
 	return &account, nil
 }
@@ -93,9 +93,12 @@ func (r *InjectLoginDB) ForgotPasswordRequestRepo(pwr modals.OTP) {
 // Rate Limit
 func (r *InjectLoginDB) GetLatestOTP(id int) (modals.OTP, error) {
 	var latestRequest modals.OTP
-	err := r.db.Where("accounts_id = ?", id).Order("created_at DESC").First(&latestRequest).Error
-	if err != nil {
-		return modals.OTP{}, err
+	result := r.db.Where("accounts_id = ?", id).Order("created_at DESC").First(&latestRequest)
+	if result.Error != nil {
+		return modals.OTP{}, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return modals.OTP{}, fmt.Errorf("no record found with id %v", id)
 	}
 	return latestRequest, nil
 }
@@ -103,9 +106,22 @@ func (r *InjectLoginDB) GetLatestOTP(id int) (modals.OTP, error) {
 // Update OTP Status if already used
 func (r *InjectLoginDB) UpdateOTPStatus(otpID int, isUsed bool) error {
 	var otp modals.OTP
-	err := r.db.Model(otp).Where("id = ?", otpID).Update("used", isUsed).Error
+	err := r.db.Model(&otp).Where("id = ?", otpID).Update("used", isUsed).Error
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+//Update Password in DB
+func (r *InjectLoginDB) UpdatePasswordRepo(id int, newPassword string)error{
+	var account modals.Accounts
+	result := r.db.Model(&account).Where("id = ?", id).Update("password",newPassword)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no record found with id %v", id)
 	}
 	return nil
 }

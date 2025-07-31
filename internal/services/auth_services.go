@@ -14,6 +14,7 @@ type LoginServices interface {
 	RegisterService(cred modals.Accounts) (modals.Accounts, error)
 	ForgotPasswordRequestService(email modals.Forgot) (string, error)
 	VerifyOTPService(otp modals.VerifyOTP) (int, error)
+	UpdatePasswordService(id int, newPassword string) error
 }
 
 type InjectLoginRepository struct {
@@ -86,7 +87,7 @@ func (s *InjectLoginRepository) ForgotPasswordRequestService(email modals.Forgot
 	} */
 	return otp, nil
 }
-
+// VerifyOTP
 func (s *InjectLoginRepository) VerifyOTPService(otp modals.VerifyOTP) (int, error) {
 	//Get the ID of the requestor
 	accountID, err := s.repo.GetAccountByEmail(otp.Identifier)
@@ -115,4 +116,11 @@ func (s *InjectLoginRepository) VerifyOTPService(otp modals.VerifyOTP) (int, err
 		return 0, customerror.ErrOTPUpdateFailed
 	}
 	return int(accountID.ID), nil
+}
+//Reset the Password
+func(s *InjectLoginRepository) UpdatePasswordService(id int, newPassword string) error{
+
+	hashPassword := encrypt.HashPassword(newPassword)
+
+	return s.repo.UpdatePasswordRepo(id, hashPassword)
 }

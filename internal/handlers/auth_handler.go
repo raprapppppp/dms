@@ -19,21 +19,21 @@ func LoginHandlerInit(s services.LoginServices) *InjectLoginHandler {
 	return &InjectLoginHandler{s}
 }
 
-var parseError = "Cannot parse JSON"
+
 
 // Login
 func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
 	var cred modals.Login
 	if err := hh.BodyParser(&cred); err != nil {
-		return hh.Status(500).JSON(fiber.Map{"message": parseError})
+		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
 	user, err := h.services.LoginService(cred)
 	if err != nil {
 		if errors.Is(err, customerror.ErrNotFound) {
-			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": customerror.ErrNotFound})
+			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User not found"})
 		}
 		if errors.Is(err, customerror.ErrNotMatch) {
-			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": customerror.ErrNotMatch})
+			return hh.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Password Incorrect"})
 		}
 	}
 	return hh.Status(fiber.StatusOK).JSON(fiber.Map{"message": user})
@@ -43,7 +43,7 @@ func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
 func (h *InjectLoginHandler) Registerhandler(hh *fiber.Ctx) error {
 	var cred modals.Accounts
 	if err := hh.BodyParser(&cred); err != nil {
-		return hh.Status(500).JSON(fiber.Map{"message": parseError})
+		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
 	_, err := h.services.RegisterService(cred)
 	if err != nil {
@@ -59,7 +59,7 @@ func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
 	var email modals.Forgot
 
 	if err := hh.BodyParser(&email); err != nil {
-		return hh.Status(500).JSON(fiber.Map{"message": parseError})
+		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
 
 	mess, err := h.services.ForgotPasswordRequestService(email)
@@ -85,7 +85,7 @@ func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 	var otp modals.VerifyOTP
 
 	if err := hh.BodyParser(&otp); err != nil {
-		return hh.Status(500).JSON(fiber.Map{"message": parseError})
+		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
 	id, err := h.services.VerifyOTPService(otp)
 	if err != nil {
@@ -125,4 +125,28 @@ func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 		SameSite: "Lax",
 	})
 	return hh.Status(fiber.StatusOK).JSON(fiber.Map{"message": token})
+}
+
+//Password Reset
+func(h *InjectLoginHandler) PasswordResetHandler(hh *fiber.Ctx) error {
+	var newPassword modals.NewPassword
+
+	if err := hh.BodyParser(&newPassword); err != nil {
+		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError}) 
+	}
+	//Get the id from locals
+	id := hh.Locals("account_id")
+	if id == nil {
+		return hh.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	//convert to float and to int before passing
+	idFloat, ok := id.(float64)
+	if !ok {
+		return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid user ID type"})
+	}
+	//Update Password
+	if err := h.services.UpdatePasswordService(int(idFloat), newPassword.Password); err != nil {
+		return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	return hh.SendStatus(fiber.StatusOK)
 }

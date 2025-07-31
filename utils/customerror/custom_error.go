@@ -19,3 +19,6 @@ var (
 	ErrOTPUpdateFailed     = errors.New("failed to updated OTP")
 	// Add other specific errors as needed, e.g., ErrSMSServiceUnavailable
 )
+
+
+var ParseError = "Cannot parse JSON"

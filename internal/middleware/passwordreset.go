@@ -9,7 +9,7 @@ import (
 
 func PasswordResetAuthMiddleware(m *fiber.Ctx) error {
 	//Get Cookies
-	cookie := m.Cookies("token")
+	cookie := m.Cookies("otpToken")
 	if cookie == "" {
 		return m.Status(fiber.StatusUnauthorized).SendString("No token cookie found")
 	}
@@ -35,6 +35,9 @@ func PasswordResetAuthMiddleware(m *fiber.Ctx) error {
 				"error": "Invalid token purpose",
 			})
 		}
+		//Get the id of the requestor from claims and store to locals
+		id := claims["account_id"]
+		m.Locals("account_id", id)
 	}
 	return m.Next()
 }
