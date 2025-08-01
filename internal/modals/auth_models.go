@@ -36,3 +36,11 @@ type VerifyOTP struct {
 type NewPassword struct {
 	Password string
 }
+
+type Decrypt struct {
+	ToDecrypt string
+}
+
+type Encrypt struct {
+	ToEncrypt string
+}

@@ -22,4 +22,7 @@ func LoginRoute(auth fiber.Router) {
 	auth.Post("/forgot-password/request", handler.ForgotPasswordRequestHandler)
 	auth.Post("/forgot-password/verify", handler.VerifyOTPHandler)
 	auth.Post("/forgot-password/reset", middleware.PasswordResetAuthMiddleware, handler.PasswordResetHandler)
+
+	//auth.Post("/encryption", handlers.EncryptionHandler)
+	//auth.Post("/decryption", handlers.DecryptionHandler)
 }

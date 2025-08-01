@@ -3,6 +3,9 @@ package handlers
 import (
 	"dms-api/internal/modals"
 	"dms-api/internal/services"
+
+	//"dms-api/utils/cryptography/decrypt"
+	//"dms-api/utils/cryptography/encrypt"
 	"dms-api/utils/customerror"
 	"dms-api/utils/jwtgenerator"
 	"errors"
@@ -65,16 +68,16 @@ func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
 	mess, err := h.services.ForgotPasswordRequestService(email)
 	if err != nil {
 		if errors.Is(err, customerror.ErrEmailNotExist) {
-			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": customerror.ErrEmailNotExist})
+			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Email does not exist"})
 		}
 		if errors.Is(err, customerror.ErrOTPGenerationFailed) {
-			return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": customerror.ErrOTPGenerationFailed})
+			return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "OTP generate failed"})
 		}
 		if errors.Is(err, customerror.ErrSendingOTP) {
-			return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": customerror.ErrSendingOTP})
+			return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Failed sending OTP"})
 		}
 		if errors.Is(err, customerror.ErrOTPRequestLimit) {
-			return hh.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"message": customerror.ErrOTPRequestLimit})
+			return hh.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"message": "To many attempts"})
 		}
 	}
 	return hh.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": mess})
@@ -150,3 +153,29 @@ func(h *InjectLoginHandler) PasswordResetHandler(hh *fiber.Ctx) error {
 	}
 	return hh.SendStatus(fiber.StatusOK)
 }
+
+
+/* func EncryptionHandler(c *fiber.Ctx)error {
+	var data modals.Encrypt
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
+
+	encrypted := encrypt.Encrypt(data.ToEncrypt)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message" : encrypted})
+}
+
+func DecryptionHandler(c *fiber.Ctx)error {
+	var data modals.Decrypt
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
+
+	decrypted, err := decrypt.Decrypt(data.ToDecrypt)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message" : decrypted})
+} */
