@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"dms-api/internal/modals"
+	"dms-api/internal/models"
 	"dms-api/internal/services"
 
 	//"dms-api/utils/cryptography/decrypt"
@@ -26,7 +26,7 @@ func LoginHandlerInit(s services.LoginServices) *InjectLoginHandler {
 
 // Login
 func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
-	var cred modals.Login
+	var cred models.Login
 	if err := hh.BodyParser(&cred); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
@@ -44,7 +44,7 @@ func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
 
 // Register
 func (h *InjectLoginHandler) Registerhandler(hh *fiber.Ctx) error {
-	var cred modals.Accounts
+	var cred models.Accounts
 	if err := hh.BodyParser(&cred); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
@@ -59,7 +59,7 @@ func (h *InjectLoginHandler) Registerhandler(hh *fiber.Ctx) error {
 
 // Forgot Password
 func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
-	var email modals.Forgot
+	var email models.Forgot
 
 	if err := hh.BodyParser(&email); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
@@ -85,7 +85,7 @@ func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
 
 // Verify OTP
 func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
-	var otp modals.VerifyOTP
+	var otp models.VerifyOTP
 
 	if err := hh.BodyParser(&otp); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
@@ -132,7 +132,7 @@ func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 
 //Password Reset
 func(h *InjectLoginHandler) PasswordResetHandler(hh *fiber.Ctx) error {
-	var newPassword modals.NewPassword
+	var newPassword models.NewPassword
 
 	if err := hh.BodyParser(&newPassword); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError}) 

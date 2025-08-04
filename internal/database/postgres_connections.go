@@ -2,7 +2,7 @@ package database
 
 import (
 	"dms-api/config"
-	"dms-api/internal/modals"
+	"dms-api/internal/models"
 	"fmt"
 
 	//	"dms-api/models"
@@ -28,8 +28,8 @@ func ConnectionDB() error {
 	}
 
 	Database = db
-	Database.AutoMigrate(&modals.Accounts{})
-	Database.AutoMigrate(&modals.OTP{})
+	Database.AutoMigrate(&models.Accounts{}, &models.User{})
+	Database.AutoMigrate(&models.OTP{})
 
 	log.Println("Database connected successfully!")
 	log.Println("Database migration complete.")

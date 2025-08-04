@@ -89,12 +89,10 @@ func (a *APISecurity) Decrypt(hexString string) ([]byte, error) {
 func (a *APISecurity) BytesToHex(data []byte) string {
 	return hex.EncodeToString(data)
 }
-
-func (a *APISecurity) HexToBytes(data string) ([]byte) {
-
-	decoded, err := hex.DecodeString(data)
-	if err != nil {
-        return fmt.Println("Error decoding hex:")// error
+func (a *APISecurity) HexToBytes(data string) ([]byte, error) {
+    decoded, err := hex.DecodeString(data)
+    if err != nil {
+        return nil, fmt.Errorf("error decoding hex: %w", err)
     }
-	return decoded
+    return decoded, nil
 }

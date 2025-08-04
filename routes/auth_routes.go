@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoginRoute(auth fiber.Router) {
+func AuthRoute(auth fiber.Router) {
 
 	//Initializee Handler, Service, Repository
 	repo := repository.LoginRepoInit(database.Database)

@@ -1,4 +1,4 @@
-package modals
+package models
 
 import "time"
 

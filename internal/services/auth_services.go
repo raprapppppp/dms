@@ -1,7 +1,7 @@
 package services
 
 import (
-	"dms-api/internal/modals"
+	"dms-api/internal/models"
 	"dms-api/internal/repository"
 	"dms-api/utils/cryptography/encrypt"
 	"dms-api/utils/customerror"
@@ -10,10 +10,10 @@ import (
 )
 
 type LoginServices interface {
-	LoginService(cred modals.Login) (modals.Accounts, error)
-	RegisterService(cred modals.Accounts) (modals.Accounts, error)
-	ForgotPasswordRequestService(email modals.Forgot) (string, error)
-	VerifyOTPService(otp modals.VerifyOTP) (int, error)
+	LoginService(cred models.Login) (models.Accounts, error)
+	RegisterService(cred models.Accounts) (models.Accounts, error)
+	ForgotPasswordRequestService(email models.Forgot) (string, error)
+	VerifyOTPService(otp models.VerifyOTP) (int, error)
 	UpdatePasswordService(id int, newPassword string) error
 }
 
@@ -26,27 +26,27 @@ func LoginServicesInit(repo repository.LoginRepository) LoginServices {
 }
 
 // Login
-func (s *InjectLoginRepository) LoginService(cred modals.Login) (modals.Accounts, error) {
+func (s *InjectLoginRepository) LoginService(cred models.Login) (models.Accounts, error) {
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	if !isUsernameExist {
-		return modals.Accounts{}, customerror.ErrNotFound
+		return models.Accounts{}, customerror.ErrNotFound
 	}
 	account, _ := s.repo.LoginRepo(cred.Username)
 	isMatch := encrypt.CompareHashAndPassword(account.Password, cred.Password)
 	if !isMatch {
-		return modals.Accounts{}, customerror.ErrNotMatch
+		return models.Accounts{}, customerror.ErrNotMatch
 	}
 	return account, nil
 }
 
 // Register
-func (s *InjectLoginRepository) RegisterService(cred modals.Accounts) (modals.Accounts, error) {
+func (s *InjectLoginRepository) RegisterService(cred models.Accounts) (models.Accounts, error) {
 
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	isEmailExist := s.repo.CheckEmailIfExist(cred.Email)
 
 	if isEmailExist || isUsernameExist {
-		return modals.Accounts{}, customerror.ErrAlreadyExist
+		return models.Accounts{}, customerror.ErrAlreadyExist
 	}
 	cred.Password = encrypt.HashPassword(cred.Password)
 	regAcc, _ := s.repo.RegisterRepo(cred)
@@ -54,8 +54,8 @@ func (s *InjectLoginRepository) RegisterService(cred modals.Accounts) (modals.Ac
 }
 
 // ForgotPasswordRequest
-func (s *InjectLoginRepository) ForgotPasswordRequestService(email modals.Forgot) (string, error) {
-	var passwordreset modals.OTP
+func (s *InjectLoginRepository) ForgotPasswordRequestService(email models.Forgot) (string, error) {
+	var passwordreset models.OTP
 	//Check email if exist
 	isEmailExist := s.repo.CheckEmailIfExist(email.Email)
 	if !isEmailExist {
@@ -88,7 +88,7 @@ func (s *InjectLoginRepository) ForgotPasswordRequestService(email modals.Forgot
 	return otp, nil
 }
 // VerifyOTP
-func (s *InjectLoginRepository) VerifyOTPService(otp modals.VerifyOTP) (int, error) {
+func (s *InjectLoginRepository) VerifyOTPService(otp models.VerifyOTP) (int, error) {
 	//Get the ID of the requestor
 	accountID, err := s.repo.GetAccountByEmail(otp.Identifier)
 	if err != nil {

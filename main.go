@@ -12,7 +12,7 @@ func main() {
 	database.ConnectionDB()
 	app := fiber.New()
 
-	routes.LoginRoute(app)
+	routes.AuthRoute(app)
 
 	app.Listen(":4000")
 
