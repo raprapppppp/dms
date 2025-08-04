@@ -4,23 +4,15 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/sha512"
 	"encoding/hex"
 	"errors"
 	"fmt"
 )
 
-func SHASecure(toHash string) string {
-	hasher := sha512.New()
-	hasher.Write([]byte(toHash))
-	hash := hasher.Sum(nil)
-	return hex.EncodeToString(hash)
-}
-
 type APISecurity struct {
-	iv        []byte
-	key       []byte
-	block     cipher.Block
+	iv    []byte
+	key   []byte
+	block cipher.Block
 	//blockMode cipher.BlockMode
 }
 
@@ -90,9 +82,9 @@ func (a *APISecurity) BytesToHex(data []byte) string {
 	return hex.EncodeToString(data)
 }
 func (a *APISecurity) HexToBytes(data string) ([]byte, error) {
-    decoded, err := hex.DecodeString(data)
-    if err != nil {
-        return nil, fmt.Errorf("error decoding hex: %w", err)
-    }
-    return decoded, nil
+	decoded, err := hex.DecodeString(data)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding hex: %w", err)
+	}
+	return decoded, nil
 }
