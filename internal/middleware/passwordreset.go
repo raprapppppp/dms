@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"dms-api/config"
+	"dms-api/utils/cryptography/security"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
@@ -13,8 +14,15 @@ func PasswordResetAuthMiddleware(m *fiber.Ctx) error {
 	if cookie == "" {
 		return m.Status(fiber.StatusUnauthorized).SendString("No token cookie found")
 	}
+	//Create Instance of NewAPISecurity
+	apiSec, _ := security.NewAPISecurity()
+	//Decrypt the token
+	decryptedToken, _ := apiSec.Decrypt(cookie)
+	//Convert to string
+	convertedToken := string(decryptedToken)
 	//Check and Validate
-	token, err := jwt.Parse(cookie, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(convertedToken, func(t *jwt.Token) (interface{}, error) {
+
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			return nil, fiber.NewError(fiber.StatusUnauthorized, "Invalid signing method")

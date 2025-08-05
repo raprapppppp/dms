@@ -112,7 +112,6 @@ func (h *InjectAuthHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 		}
 	}
 	//Generate jwt token
-	
 	token, err := jwtgenerator.GenerateOTPToken(id)
 	if err != nil {
 		return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

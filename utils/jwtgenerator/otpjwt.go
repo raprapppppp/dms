@@ -2,6 +2,7 @@ package jwtgenerator
 
 import (
 	"dms-api/config"
+	"dms-api/utils/cryptography/security"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -24,6 +25,12 @@ func GenerateOTPToken(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	//Create Instance of NewAPISecurity
+	apiSec, _ := security.NewAPISecurity()
+	//Encrypt the token which is t
+	encryptedToken, _ := apiSec.Encrypt(t)
+	//Convert encryptedToken to Hex string
+	hexToken := apiSec.BytesToHex(encryptedToken)
 	// Return token
-	return t, nil
+	return hexToken, nil
 }
