@@ -18,7 +18,7 @@ type DBGorm struct {
 func DocumentTypesRepositoryInit(db *gorm.DB) DocumentTypesRepository {
 	return &DBGorm{db}
 }
-
+//Get All Document Types
 func(d *DBGorm) GetAllDocumentTypes() ([]models.DocumentTypes, error){
 	var documentTypes []models.DocumentTypes
 
