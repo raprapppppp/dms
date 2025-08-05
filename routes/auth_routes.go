@@ -13,9 +13,9 @@ import (
 func AuthRoute(auth fiber.Router) {
 
 	//Initializee Handler, Service, Repository
-	repo := repository.LoginRepoInit(database.Database)
-	service := services.LoginServicesInit(repo)
-	handler := handlers.LoginHandlerInit(service)
+	repo := repository.AuthRepoInit(database.Database)
+	service := services.AuthServicesInit(repo)
+	handler := handlers.AuthHandlerInit(service)
 
 	auth.Post("/login", handler.LoginHandler)
 	auth.Post("/register", handler.Registerhandler)

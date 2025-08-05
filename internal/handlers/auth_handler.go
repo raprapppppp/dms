@@ -14,18 +14,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type InjectLoginHandler struct {
-	services services.LoginServices
+type InjectAuthHandler struct {
+	services services.AuthServices
 }
 
-func LoginHandlerInit(s services.LoginServices) *InjectLoginHandler {
-	return &InjectLoginHandler{s}
+func AuthHandlerInit(s services.AuthServices) *InjectAuthHandler {
+	return &InjectAuthHandler{s}
 }
 
 
 
 // Login
-func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
+func (h *InjectAuthHandler) LoginHandler(hh *fiber.Ctx) error {
 	var cred models.Login
 	if err := hh.BodyParser(&cred); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
@@ -43,7 +43,7 @@ func (h *InjectLoginHandler) LoginHandler(hh *fiber.Ctx) error {
 }
 
 // Register
-func (h *InjectLoginHandler) Registerhandler(hh *fiber.Ctx) error {
+func (h *InjectAuthHandler) Registerhandler(hh *fiber.Ctx) error {
 	var cred models.Accounts
 	if err := hh.BodyParser(&cred); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
@@ -58,7 +58,7 @@ func (h *InjectLoginHandler) Registerhandler(hh *fiber.Ctx) error {
 }
 
 // Forgot Password
-func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
+func (h *InjectAuthHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
 	var email models.Forgot
 
 	if err := hh.BodyParser(&email); err != nil {
@@ -84,7 +84,7 @@ func (h *InjectLoginHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
 }
 
 // Verify OTP
-func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
+func (h *InjectAuthHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 	var otp models.VerifyOTP
 
 	if err := hh.BodyParser(&otp); err != nil {
@@ -131,7 +131,7 @@ func (h *InjectLoginHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 }
 
 //Password Reset
-func(h *InjectLoginHandler) PasswordResetHandler(hh *fiber.Ctx) error {
+func(h *InjectAuthHandler) PasswordResetHandler(hh *fiber.Ctx) error {
 	var newPassword models.NewPassword
 
 	if err := hh.BodyParser(&newPassword); err != nil {

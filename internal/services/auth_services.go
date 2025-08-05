@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type LoginServices interface {
+type AuthServices interface {
 	LoginService(cred models.Login) (models.Accounts, error)
 	RegisterService(cred models.Accounts) (models.Accounts, error)
 	ForgotPasswordRequestService(email models.Forgot) (string, error)
@@ -17,16 +17,16 @@ type LoginServices interface {
 	UpdatePasswordService(id int, newPassword string) error
 }
 
-type InjectLoginRepository struct {
-	repo repository.LoginRepository
+type InjectAuthRepository struct {
+	repo repository.AuthRepository
 }
 
-func LoginServicesInit(repo repository.LoginRepository) LoginServices {
-	return &InjectLoginRepository{repo}
+func AuthServicesInit(repo repository.AuthRepository) AuthServices {
+	return &InjectAuthRepository{repo}
 }
 
 // Login
-func (s *InjectLoginRepository) LoginService(cred models.Login) (models.Accounts, error) {
+func (s *InjectAuthRepository) LoginService(cred models.Login) (models.Accounts, error) {
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	if !isUsernameExist {
 		return models.Accounts{}, customerror.ErrNotFound
@@ -40,7 +40,7 @@ func (s *InjectLoginRepository) LoginService(cred models.Login) (models.Accounts
 }
 
 // Register
-func (s *InjectLoginRepository) RegisterService(cred models.Accounts) (models.Accounts, error) {
+func (s *InjectAuthRepository) RegisterService(cred models.Accounts) (models.Accounts, error) {
 
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	isEmailExist := s.repo.CheckEmailIfExist(cred.Email)
@@ -54,7 +54,7 @@ func (s *InjectLoginRepository) RegisterService(cred models.Accounts) (models.Ac
 }
 
 // ForgotPasswordRequest
-func (s *InjectLoginRepository) ForgotPasswordRequestService(email models.Forgot) (string, error) {
+func (s *InjectAuthRepository) ForgotPasswordRequestService(email models.Forgot) (string, error) {
 	var passwordreset models.OTP
 	//Check email if exist
 	isEmailExist := s.repo.CheckEmailIfExist(email.Email)
@@ -88,7 +88,7 @@ func (s *InjectLoginRepository) ForgotPasswordRequestService(email models.Forgot
 	return otp, nil
 }
 // VerifyOTP
-func (s *InjectLoginRepository) VerifyOTPService(otp models.VerifyOTP) (int, error) {
+func (s *InjectAuthRepository) VerifyOTPService(otp models.VerifyOTP) (int, error) {
 	//Get the ID of the requestor
 	accountID, err := s.repo.GetAccountByEmail(otp.Identifier)
 	if err != nil {
@@ -118,7 +118,7 @@ func (s *InjectLoginRepository) VerifyOTPService(otp models.VerifyOTP) (int, err
 	return int(accountID.ID), nil
 }
 //Reset the Password
-func(s *InjectLoginRepository) UpdatePasswordService(id int, newPassword string) error{
+func(s *InjectAuthRepository) UpdatePasswordService(id int, newPassword string) error{
 
 	hashPassword := encrypt.HashPassword(newPassword)
 

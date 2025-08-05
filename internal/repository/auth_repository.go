@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type LoginRepository interface {
+type AuthRepository interface {
 	LoginRepo(username string) (models.Accounts, error)
 	RegisterRepo(cred models.Accounts) (models.Accounts, error)
 	CheckEmailIfExist(username string) bool
@@ -24,7 +24,7 @@ type InjectLoginDB struct {
 	db *gorm.DB
 }
 
-func LoginRepoInit(db *gorm.DB) LoginRepository {
+func AuthRepoInit(db *gorm.DB) AuthRepository {
 	return &InjectLoginDB{db}
 }
 
