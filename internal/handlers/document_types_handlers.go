@@ -10,15 +10,16 @@ type InjectDocumentTypesServices struct {
 	service services.DocumentTypesServices
 }
 
-//Handler Initializer
+// Handler Initializer
 func DocumentTypesHandlersInit(s services.DocumentTypesServices) *InjectDocumentTypesServices {
 	return &InjectDocumentTypesServices{s}
 }
-//Get all Document types
+
+// Get all Document types
 func (h *InjectDocumentTypesServices) GetAllDocumentTypesHandler(dt *fiber.Ctx) error {
 	allDocumentTypes, err := h.service.GetAllDocumentTypes()
 	if err != nil {
 		return err
 	}
-	return dt.Status(fiber.StatusOK).JSON(allDocumentTypes) 
+	return dt.Status(fiber.StatusOK).JSON(allDocumentTypes)
 }
