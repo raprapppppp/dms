@@ -36,8 +36,8 @@ func PasswordResetAuthMiddleware(m *fiber.Ctx) error {
 			})
 		}
 		//Get the id of the requestor from claims and store to locals
-		id := claims["account_id"]
-		m.Locals("account_id", id)
+		id := claims["user_id"]
+		m.Locals("user_id", id)
 	}
 	return m.Next()
 }

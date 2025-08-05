@@ -36,3 +36,39 @@ type User struct {
 	InstiID        uint      `json:"insti_id"`
 	OfficeID       string    `json:"office_id"`
 }
+
+type Login struct {
+	Username string
+	Password string
+}
+
+type Forgot struct {
+	StaffID string 		`json:"staff_id"`
+}
+
+type OTP struct {
+	ID         uint      `gorm:"primaryKey"`
+	UserID     uint      `gorm:"not null;index"`
+	OTPCode    string    `gorm:"not null"`
+	ExpiresAt  time.Time `gorm:"not null"`
+	Used       bool      `gorm:"default:false"`
+	CreatedAt  time.Time `gorm:"default:current_timestamp"`
+	User   	   User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+}
+
+type VerifyOTP struct {
+	StaffID string 		`json:"staff_id"`
+	Otp string			`json:"otp"`
+}
+
+type NewPassword struct {
+	Password string 	`json:"password"`
+}
+
+type Decrypt struct {
+	ToDecrypt string
+}
+
+type Encrypt struct {
+	ToEncrypt string
+}

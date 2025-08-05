@@ -7,6 +7,7 @@ import (
 // Custom Error
 var (
 	ErrEmailNotExist       = errors.New("email does not exist")
+	ErrStaffIDNotExist     = errors.New("staff id does not exist")
 	ErrOTPGenerationFailed = errors.New("failed to generate OTP")
 	ErrNotFound            = errors.New("not found")
 	ErrNotMatch            = errors.New("not match")

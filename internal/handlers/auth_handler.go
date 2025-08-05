@@ -43,7 +43,7 @@ func (h *InjectAuthHandler) LoginHandler(hh *fiber.Ctx) error {
 }
 
 // Register
-func (h *InjectAuthHandler) Registerhandler(hh *fiber.Ctx) error {
+/* func (h *InjectAuthHandler) Registerhandler(hh *fiber.Ctx) error {
 	var cred models.Accounts
 	if err := hh.BodyParser(&cred); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
@@ -56,19 +56,19 @@ func (h *InjectAuthHandler) Registerhandler(hh *fiber.Ctx) error {
 	}
 	return hh.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": "Created"})
 }
-
+ */
 // Forgot Password
 func (h *InjectAuthHandler) ForgotPasswordRequestHandler(hh *fiber.Ctx) error {
-	var email models.Forgot
+	var staffId models.Forgot
 
-	if err := hh.BodyParser(&email); err != nil {
+	if err := hh.BodyParser(&staffId); err != nil {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError})
 	}
 
-	mess, err := h.services.ForgotPasswordRequestService(email)
+	mess, err := h.services.ForgotPasswordRequestService(staffId)
 	if err != nil {
-		if errors.Is(err, customerror.ErrEmailNotExist) {
-			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Email does not exist"})
+		if errors.Is(err, customerror.ErrStaffIDNotExist) {
+			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "staffId does not exist"})
 		}
 		if errors.Is(err, customerror.ErrOTPGenerationFailed) {
 			return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "OTP generate failed"})
@@ -92,8 +92,8 @@ func (h *InjectAuthHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 	}
 	id, err := h.services.VerifyOTPService(otp)
 	if err != nil {
-		if errors.Is(err, customerror.ErrNotFound) {
-			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Email not found"})
+		if errors.Is(err, customerror.ErrStaffIDNotExist) {
+			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Staff ID not found"})
 		}
 		if errors.Is(err, customerror.ErrNoLatestOtp) {
 			return hh.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "No Password reset request"})
@@ -112,6 +112,7 @@ func (h *InjectAuthHandler) VerifyOTPHandler(hh *fiber.Ctx) error {
 		}
 	}
 	//Generate jwt token
+	
 	token, err := jwtgenerator.GenerateOTPToken(id)
 	if err != nil {
 		return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -138,12 +139,12 @@ func(h *InjectAuthHandler) PasswordResetHandler(hh *fiber.Ctx) error {
 		return hh.Status(500).JSON(fiber.Map{"message": customerror.ParseError}) 
 	}
 	//Get the id from locals
-	id := hh.Locals("account_id")
-	if id == nil {
+	userId := hh.Locals("user_id")
+	if userId == nil {
 		return hh.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 	//convert to float and to int before passing
-	idFloat, ok := id.(float64)
+	idFloat, ok := userId.(float64)
 	if !ok {
 		return hh.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid user ID type"})
 	}

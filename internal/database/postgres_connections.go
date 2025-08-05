@@ -28,7 +28,7 @@ func ConnectionDB() error {
 	}
 
 	Database = db
-	Database.AutoMigrate(&models.Accounts{}, &models.User{})
+	Database.AutoMigrate(&models.Accounts{}, &models.User{}, &models.DocumentType{})
 	Database.AutoMigrate(&models.OTP{})
 
 	log.Println("Database connected successfully!")

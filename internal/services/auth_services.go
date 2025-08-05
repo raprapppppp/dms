@@ -6,13 +6,14 @@ import (
 	"dms-api/utils/cryptography/encrypt"
 	"dms-api/utils/customerror"
 	"dms-api/utils/otpgenerator"
+	"fmt"
 	"time"
 )
 
 type AuthServices interface {
-	LoginService(cred models.Login) (models.Accounts, error)
-	RegisterService(cred models.Accounts) (models.Accounts, error)
-	ForgotPasswordRequestService(email models.Forgot) (string, error)
+	LoginService(cred models.Login) (models.User, error)
+	//RegisterService(cred models.Accounts) (models.Accounts, error)
+	ForgotPasswordRequestService(staffId models.Forgot) (string, error)
 	VerifyOTPService(otp models.VerifyOTP) (int, error)
 	UpdatePasswordService(id int, newPassword string) error
 }
@@ -26,21 +27,25 @@ func AuthServicesInit(repo repository.AuthRepository) AuthServices {
 }
 
 // Login
-func (s *InjectAuthRepository) LoginService(cred models.Login) (models.Accounts, error) {
+func (s *InjectAuthRepository) LoginService(cred models.Login) (models.User, error) {
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	if !isUsernameExist {
-		return models.Accounts{}, customerror.ErrNotFound
+		return models.User{}, customerror.ErrNotFound
 	}
-	account, _ := s.repo.LoginRepo(cred.Username)
-	isMatch := encrypt.CompareHashAndPassword(account.Password, cred.Password)
-	if !isMatch {
-		return models.Accounts{}, customerror.ErrNotMatch
+	//Get user single rows
+	user, _ := s.repo.LoginRepo(cred.Username)
+	//Hash the password before comparing
+	password := encrypt.SHASecure(cred.Password)
+	fmt.Print(password)
+	//Check if Password is correct
+	if user.UserPass != password{
+		return models.User{}, customerror.ErrNotMatch
 	}
-	return account, nil
+	return user, nil
 }
 
 // Register
-func (s *InjectAuthRepository) RegisterService(cred models.Accounts) (models.Accounts, error) {
+/* func (s *InjectAuthRepository) RegisterService(cred models.Accounts) (models.Accounts, error) {
 
 	isUsernameExist := s.repo.CheckUsernameIfExist(cred.Username)
 	isEmailExist := s.repo.CheckEmailIfExist(cred.Email)
@@ -51,21 +56,22 @@ func (s *InjectAuthRepository) RegisterService(cred models.Accounts) (models.Acc
 	cred.Password = encrypt.HashPassword(cred.Password)
 	regAcc, _ := s.repo.RegisterRepo(cred)
 	return regAcc, nil
-}
+} */
 
 // ForgotPasswordRequest
-func (s *InjectAuthRepository) ForgotPasswordRequestService(email models.Forgot) (string, error) {
+func (s *InjectAuthRepository) ForgotPasswordRequestService(staffId models.Forgot) (string, error) {
 	var passwordreset models.OTP
-	//Check email if exist
-	isEmailExist := s.repo.CheckEmailIfExist(email.Email)
-	if !isEmailExist {
-		return "", customerror.ErrEmailNotExist
+	//Check Staff ID if exist
+	isStaffIdExist := s.repo.CheckStaffIdIfExist(staffId.StaffID)
+
+	if !isStaffIdExist {
+		return "", customerror.ErrStaffIDNotExist
 	}
-	//Get ID via email
-	accountID, _ := s.repo.GetAccountByEmail(email.Email)
+	//Get User ID via Staff ID
+	userID, _ := s.repo.GetUserIDByStaffID(staffId.StaffID)
 
 	//Rate limit
-	latestOTPReq, _ := s.repo.GetLatestOTP(int(accountID.ID))
+	latestOTPReq, _ := s.repo.GetLatestOTP(int(userID.UserID))
 	if time.Since(latestOTPReq.CreatedAt) < 1*time.Minute {
 		return "", customerror.ErrOTPRequestLimit
 	}
@@ -75,8 +81,8 @@ func (s *InjectAuthRepository) ForgotPasswordRequestService(email models.Forgot)
 		return "", customerror.ErrOTPGenerationFailed
 	}
 	//Set accountID, OTPCode, Expiration in before saving to DB
-	passwordreset.AccountsID = accountID.ID
-	passwordreset.OTPCode = encrypt.HashPassword(otp)
+	passwordreset.UserID = userID.UserID
+	passwordreset.OTPCode = encrypt.SHASecure(otp)
 	passwordreset.ExpiresAt = time.Now().Add(1 * time.Minute)
 	s.repo.ForgotPasswordRequestRepo(passwordreset)
 
@@ -90,12 +96,13 @@ func (s *InjectAuthRepository) ForgotPasswordRequestService(email models.Forgot)
 // VerifyOTP
 func (s *InjectAuthRepository) VerifyOTPService(otp models.VerifyOTP) (int, error) {
 	//Get the ID of the requestor
-	accountID, err := s.repo.GetAccountByEmail(otp.Identifier)
+	userID, err := s.repo.GetUserIDByStaffID(otp.StaffID)
+
 	if err != nil {
-		return 0, customerror.ErrNotFound
+		return 0, customerror.ErrStaffIDNotExist
 	}
 	//Get the latest OTP request
-	latestOTPReq, err := s.repo.GetLatestOTP(int(accountID.ID))
+	latestOTPReq, err := s.repo.GetLatestOTP(int(userID.UserID))
 	if err != nil {
 		return 0, customerror.ErrNoLatestOtp
 	}
@@ -103,24 +110,27 @@ func (s *InjectAuthRepository) VerifyOTPService(otp models.VerifyOTP) (int, erro
 	if latestOTPReq.Used {
 		return 0, customerror.ErrOTPAlreadyUsed
 	}
+	//Check if OTP is expired
 	if time.Now().After(latestOTPReq.ExpiresAt) {
 		s.repo.UpdateOTPStatus(int(latestOTPReq.ID), true)
 		return 0, customerror.ErrOTPExpired
 	}
+	//Hash the OTP before comparing
+	hashOTP := encrypt.SHASecure(otp.Otp)
 	//Check if OTP is match in DB
-	if !encrypt.CompareHashAndPassword(latestOTPReq.OTPCode, otp.Otp) {
+	if latestOTPReq.OTPCode != hashOTP {
 		return 0, customerror.ErrNotMatch
 	}
 	//Update OTP status : Used=True
 	if err := s.repo.UpdateOTPStatus(int(latestOTPReq.ID), true); err != nil {
 		return 0, customerror.ErrOTPUpdateFailed
 	}
-	return int(accountID.ID), nil
+	return int(userID.UserID), nil
 }
 //Reset the Password
 func(s *InjectAuthRepository) UpdatePasswordService(id int, newPassword string) error{
 
-	hashPassword := encrypt.HashPassword(newPassword)
+	hashPassword := encrypt.SHASecure(newPassword)
 
 	return s.repo.UpdatePasswordRepo(id, hashPassword)
 }

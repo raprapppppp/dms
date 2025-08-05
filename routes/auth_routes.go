@@ -18,7 +18,7 @@ func AuthRoute(auth fiber.Router) {
 	handler := handlers.AuthHandlerInit(service)
 
 	auth.Post("/login", handler.LoginHandler)
-	auth.Post("/register", handler.Registerhandler)
+	//auth.Post("/register", handler.Registerhandler)
 	auth.Post("/forgot-password/request", handler.ForgotPasswordRequestHandler)
 	auth.Post("/forgot-password/verify", handler.VerifyOTPHandler)
 	auth.Post("/forgot-password/reset", middleware.PasswordResetAuthMiddleware, handler.PasswordResetHandler)

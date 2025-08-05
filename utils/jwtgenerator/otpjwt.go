@@ -10,7 +10,7 @@ import (
 func GenerateOTPToken(id int) (string, error) {
 	// Create the Claims
 	claims := jwt.MapClaims{
-		"account_id":   id,
+		"user_id":   	id,
 		"purpose":      "password_reset",
 		"verified_otp": true,
 		"exp":          time.Now().Add(time.Minute * 1).Unix(),

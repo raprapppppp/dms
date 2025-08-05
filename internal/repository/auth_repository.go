@@ -9,11 +9,11 @@ import (
 )
 
 type AuthRepository interface {
-	LoginRepo(username string) (models.Accounts, error)
-	RegisterRepo(cred models.Accounts) (models.Accounts, error)
-	CheckEmailIfExist(username string) bool
-	CheckUsernameIfExist(email string) bool
-	GetAccountByEmail(email string) (*models.Accounts, error)
+	LoginRepo(username string) (models.User, error)
+	//RegisterRepo(cred models.Accounts) (models.Accounts, error)
+	CheckStaffIdIfExist(staffId string) bool
+	CheckUsernameIfExist(username string) bool
+	GetUserIDByStaffID(staffId string) (*models.User, error)
 	ForgotPasswordRequestRepo(pwr models.OTP)
 	GetLatestOTP(id int) (models.OTP, error)
 	UpdateOTPStatus(otpID int, isUsed bool) error
@@ -28,30 +28,29 @@ func AuthRepoInit(db *gorm.DB) AuthRepository {
 	return &InjectLoginDB{db}
 }
 
-// Login
-func (r *InjectLoginDB) LoginRepo(username string) (models.Accounts, error) {
-	var account models.Accounts
+// Login 
+func (r *InjectLoginDB) LoginRepo(username string) (models.User, error) {
+	var user models.User
 	var notFoundError = errors.New("user not found")
-	err := r.db.Find(&account, "username = ?", username).Error
+	err := r.db.Find(&user, "user_name = ?", username).Error
 	if err != nil {
-		return models.Accounts{}, notFoundError
+		return models.User{}, notFoundError
 	}
-	return account, nil
+	return user, nil
 }
-
 // Register
-func (r *InjectLoginDB) RegisterRepo(cred models.Accounts) (models.Accounts, error) {
+/* func (r *InjectLoginDB) RegisterRepo(cred models.Accounts) (models.Accounts, error) {
 	if err := r.db.Create(&cred).Error; err != nil {
 		return models.Accounts{}, err
 	}
 	return cred, nil
-}
+} */
 
 // Check Username if Already Exist
 func (r *InjectLoginDB) CheckUsernameIfExist(username string) bool {
 	var count int64
-	var account models.Accounts
-	r.db.Model(&account).Where("username = ?", username).Count(&count)
+	var user models.User
+	r.db.Model(&user).Where("user_name = ?", username).Count(&count)
 	if count > 0 {
 		return true
 	} else {
@@ -59,11 +58,11 @@ func (r *InjectLoginDB) CheckUsernameIfExist(username string) bool {
 	}
 }
 
-// Check Email if Already Exist
-func (r *InjectLoginDB) CheckEmailIfExist(email string) bool {
+// Check Staff ID if Already Exist 
+func (r *InjectLoginDB) CheckStaffIdIfExist(staffId string) bool {
 	var count int64
-	var account models.Accounts
-	r.db.Model(&account).Where("email = ?", email).Count(&count)
+	var user models.User
+	r.db.Model(&user).Where("staff_id = ?", staffId).Count(&count)
 	if count > 0 {
 		return true
 	} else {
@@ -71,18 +70,18 @@ func (r *InjectLoginDB) CheckEmailIfExist(email string) bool {
 	}
 }
 
-// Get Account ID using email
-func (r *InjectLoginDB) GetAccountByEmail(email string) (*models.Accounts, error) {
-	var account models.Accounts
+// Get User ID using Staff ID
+func (r *InjectLoginDB) GetUserIDByStaffID(staffId string) (*models.User, error) {
+	var user models.User
 	// Use SELECT to only fetch specific columns (optional)
-	result := r.db.Select("id").Where("email = ?", email).First(&account)
+	result := r.db.Select("user_id").Where("staff_id = ?", staffId).First(&user)
 	if result.Error != nil {
-		return &models.Accounts{}, result.Error
+		return &models.User{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return &models.Accounts{}, fmt.Errorf("no record found with id %s", email)
+		return &models.User{}, fmt.Errorf("no record found with id %s", staffId)
 	}
-	return &account, nil
+	return &user, nil
 }
 
 // ForgotPassword Request - Save OTP details to DB
@@ -93,7 +92,7 @@ func (r *InjectLoginDB) ForgotPasswordRequestRepo(pwr models.OTP) {
 // Rate Limit
 func (r *InjectLoginDB) GetLatestOTP(id int) (models.OTP, error) {
 	var latestRequest models.OTP
-	result := r.db.Where("accounts_id = ?", id).Order("created_at DESC").First(&latestRequest)
+	result := r.db.Where("user_id = ?", id).Order("created_at DESC").First(&latestRequest)
 	if result.Error != nil {
 		return models.OTP{}, result.Error
 	}
@@ -114,14 +113,14 @@ func (r *InjectLoginDB) UpdateOTPStatus(otpID int, isUsed bool) error {
 }
 
 //Update Password in DB
-func (r *InjectLoginDB) UpdatePasswordRepo(id int, newPassword string)error{
-	var account models.Accounts
-	result := r.db.Model(&account).Where("id = ?", id).Update("password",newPassword)
+func (r *InjectLoginDB) UpdatePasswordRepo(userId int, newPassword string)error{
+	var user models.User
+	result := r.db.Model(&user).Where("user_id = ?", userId).Update("user_pass",newPassword)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no record found with id %v", id)
+		return fmt.Errorf("no record found with id %v", userId)
 	}
 	return nil
 }
