@@ -10,18 +10,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AuthRoute(auth fiber.Router) {
+func AuthRoute(app fiber.Router) {
 
 	//Initializee Handler, Service, Repository
 	repo := repository.AuthRepoInit(database.Database)
 	service := services.AuthServicesInit(repo)
 	handler := handlers.AuthHandlerInit(service)
 
-	auth.Post("/login", handler.LoginHandler)
+	app.Post("/login", handler.LoginHandler)
 	//auth.Post("/register", handler.Registerhandler)
-	auth.Post("/forgot-password/request", handler.ForgotPasswordRequestHandler)
-	auth.Post("/forgot-password/verify", handler.VerifyOTPHandler)
-	auth.Post("/forgot-password/reset", middleware.PasswordResetAuthMiddleware, handler.PasswordResetHandler)
+	app.Post("/forgot-password/request", handler.ForgotPasswordRequestHandler)
+	app.Post("/forgot-password/verify", handler.VerifyOTPHandler)
+	app.Post("/forgot-password/reset", middleware.PasswordResetAuthMiddleware, handler.PasswordResetHandler)
 
 	//auth.Post("/encryption", handlers.EncryptionHandler)
 	//auth.Post("/decryption", handlers.DecryptionHandler)

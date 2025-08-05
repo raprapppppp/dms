@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type DocumentType struct {
+type DocumentTypes struct {
 	DocTypeID   int       `json:"docTypeID"   gorm:"column:docTypeID;primaryKey;autoIncrement"`
 	DocTypeName string    `json:"docTypeName" gorm:"column:docTypeName;type:varchar(255);not null"`
 	DateCreated time.Time `json:"dateCreated" gorm:"column:dateCreated;autoCreateTime"`

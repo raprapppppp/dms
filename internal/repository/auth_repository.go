@@ -20,16 +20,16 @@ type AuthRepository interface {
 	UpdatePasswordRepo(id int, newPassword string) error
 }
 
-type InjectLoginDB struct {
+type InjectAuthnDB struct {
 	db *gorm.DB
 }
 
 func AuthRepoInit(db *gorm.DB) AuthRepository {
-	return &InjectLoginDB{db}
+	return &InjectAuthnDB{db}
 }
 
 // Login 
-func (r *InjectLoginDB) LoginRepo(username string) (models.User, error) {
+func (r *InjectAuthnDB) LoginRepo(username string) (models.User, error) {
 	var user models.User
 	var notFoundError = errors.New("user not found")
 	err := r.db.Find(&user, "user_name = ?", username).Error
@@ -47,7 +47,7 @@ func (r *InjectLoginDB) LoginRepo(username string) (models.User, error) {
 } */
 
 // Check Username if Already Exist
-func (r *InjectLoginDB) CheckUsernameIfExist(username string) bool {
+func (r *InjectAuthnDB) CheckUsernameIfExist(username string) bool {
 	var count int64
 	var user models.User
 	r.db.Model(&user).Where("user_name = ?", username).Count(&count)
@@ -59,7 +59,7 @@ func (r *InjectLoginDB) CheckUsernameIfExist(username string) bool {
 }
 
 // Check Staff ID if Already Exist 
-func (r *InjectLoginDB) CheckStaffIdIfExist(staffId string) bool {
+func (r *InjectAuthnDB) CheckStaffIdIfExist(staffId string) bool {
 	var count int64
 	var user models.User
 	r.db.Model(&user).Where("staff_id = ?", staffId).Count(&count)
@@ -71,7 +71,7 @@ func (r *InjectLoginDB) CheckStaffIdIfExist(staffId string) bool {
 }
 
 // Get User ID using Staff ID
-func (r *InjectLoginDB) GetUserIDByStaffID(staffId string) (*models.User, error) {
+func (r *InjectAuthnDB) GetUserIDByStaffID(staffId string) (*models.User, error) {
 	var user models.User
 	// Use SELECT to only fetch specific columns (optional)
 	result := r.db.Select("user_id").Where("staff_id = ?", staffId).First(&user)
@@ -85,12 +85,12 @@ func (r *InjectLoginDB) GetUserIDByStaffID(staffId string) (*models.User, error)
 }
 
 // ForgotPassword Request - Save OTP details to DB
-func (r *InjectLoginDB) ForgotPasswordRequestRepo(pwr models.OTP) {
+func (r *InjectAuthnDB) ForgotPasswordRequestRepo(pwr models.OTP) {
 	r.db.Create(&pwr)
 }
 
 // Rate Limit
-func (r *InjectLoginDB) GetLatestOTP(id int) (models.OTP, error) {
+func (r *InjectAuthnDB) GetLatestOTP(id int) (models.OTP, error) {
 	var latestRequest models.OTP
 	result := r.db.Where("user_id = ?", id).Order("created_at DESC").First(&latestRequest)
 	if result.Error != nil {
@@ -103,7 +103,7 @@ func (r *InjectLoginDB) GetLatestOTP(id int) (models.OTP, error) {
 }
 
 // Update OTP Status if already used
-func (r *InjectLoginDB) UpdateOTPStatus(otpID int, isUsed bool) error {
+func (r *InjectAuthnDB) UpdateOTPStatus(otpID int, isUsed bool) error {
 	var otp models.OTP
 	err := r.db.Model(&otp).Where("id = ?", otpID).Update("used", isUsed).Error
 	if err != nil {
@@ -113,7 +113,7 @@ func (r *InjectLoginDB) UpdateOTPStatus(otpID int, isUsed bool) error {
 }
 
 //Update Password in DB
-func (r *InjectLoginDB) UpdatePasswordRepo(userId int, newPassword string)error{
+func (r *InjectAuthnDB) UpdatePasswordRepo(userId int, newPassword string)error{
 	var user models.User
 	result := r.db.Model(&user).Where("user_id = ?", userId).Update("user_pass",newPassword)
 	if result.Error != nil {

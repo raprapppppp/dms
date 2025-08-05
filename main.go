@@ -13,6 +13,7 @@ func main() {
 	app := fiber.New()
 
 	routes.AuthRoute(app)
+	routes.DocumentTypesRoutes(app)
 
 	app.Listen(":4000")
 

@@ -1,11 +1,21 @@
 package routes
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"dms-api/internal/database"
+	"dms-api/internal/handlers"
+	"dms-api/internal/repository"
+	"dms-api/internal/services"
 
-func DocumentTypesRoutes(dt fiber.Router) {
+	"github.com/gofiber/fiber/v2"
+)
 
-	//
+func DocumentTypesRoutes(app fiber.Router) {
 
-	dt.Get("/dms/get-document-types", )
+	//Initialize repo,service,handler
+	dtRepo := repository.DocumentTypesRepositoryInit(database.Database)
+	dtServices := services.DocumentTypesServicesInit(dtRepo)
+	dtHandler := handlers.DocumentTypesHandlersInit(dtServices)
+
+	app.Get("/dms/get-document-types", dtHandler.GetAllDocumentTypesHandler)
 
 }

@@ -4,8 +4,6 @@ import (
 	"dms-api/config"
 	"dms-api/internal/models"
 	"fmt"
-
-	//	"dms-api/models"
 	"log"
 
 	"gorm.io/driver/postgres"
@@ -28,7 +26,7 @@ func ConnectionDB() error {
 	}
 
 	Database = db
-	Database.AutoMigrate(&models.Accounts{}, &models.User{}, &models.DocumentType{})
+	Database.AutoMigrate(&models.User{}, &models.DocumentTypes{})
 	Database.AutoMigrate(&models.OTP{})
 
 	log.Println("Database connected successfully!")
